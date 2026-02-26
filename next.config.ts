@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '100mb',
     },
   },
+  // Empty turbopack config to allow webpack config to work
+  turbopack: {},
   // Required for FFmpeg WASM
   async headers() {
     return [
