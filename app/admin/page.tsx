@@ -1,13 +1,10 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, Image as ImageIcon, Video, Check, X, Trash2, RefreshCw, FolderOpen, Scissors, BookOpen, FileArchive, FileText } from 'lucide-react';
+import { Upload, Image as ImageIcon, Video, Check, X, RefreshCw, FolderOpen, BookOpen, FileArchive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
-import * as pdfjsLib from 'pdfjs-dist';
 
 interface UploadedFile {
   name: string;
@@ -49,223 +46,45 @@ const uploadSlots: UploadSlot[] = [
   {
     id: 'book-cover',
     label: 'Book Cover',
-    description: 'Cover image or PDF (auto-converts)',
+    description: 'Cover image for the book',
     filename: 'book-cover.jpg',
   },
 ];
 
-// Initialize PDF.js worker from local file
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
-}
-
-// Convert PDF first page to image
-async function pdfToImage(file: File): Promise<{ file: File; preview: string }> {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  const page = await pdf.getPage(1);
-
-  const scale = 2; // Higher scale = better quality
-  const viewport = page.getViewport({ scale });
-
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d')!;
-  canvas.height = viewport.height;
-  canvas.width = viewport.width;
-
-  await page.render({
-    canvasContext: context,
-    viewport: viewport,
-  }).promise;
-
-  // Convert canvas to blob
-  const blob = await new Promise<Blob>((resolve) => {
-    canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.95);
-  });
-
-  const imageFile = new File([blob], file.name.replace('.pdf', '.jpg'), { type: 'image/jpeg' });
-  const preview = URL.createObjectURL(blob);
-
-  return { file: imageFile, preview };
-}
-
 export default function AdminPage() {
-  const [uploads, setUploads] = useState<Record<string, { file?: File; preview?: string; status: 'idle' | 'uploading' | 'success' | 'error'; converting?: boolean }>>({});
+  const [uploads, setUploads] = useState<Record<string, { file?: File; preview?: string; status: 'idle' | 'uploading' | 'success' | 'error' }>>({});
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [mediaLibrary, setMediaLibrary] = useState<UploadedFile[]>([]);
   const [generalFiles, setGeneralFiles] = useState<PendingFile[]>([]);
-  const [compressing, setCompressing] = useState(false);
-  const [compressionProgress, setCompressionProgress] = useState(0);
-  const ffmpegRef = useRef<FFmpeg | null>(null);
-  const [ffmpegLoaded, setFfmpegLoaded] = useState(false);
-
-  const loadFFmpeg = async () => {
-    if (ffmpegRef.current) return ffmpegRef.current;
-
-    const ffmpeg = new FFmpeg();
-
-    ffmpeg.on('progress', ({ progress }) => {
-      setCompressionProgress(Math.round(progress * 100));
-    });
-
-    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
-    await ffmpeg.load({
-      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-    });
-
-    ffmpegRef.current = ffmpeg;
-    setFfmpegLoaded(true);
-    return ffmpeg;
-  };
-
-  const compressVideo = async (index: number) => {
-    const fileData = generalFiles[index];
-    if (!fileData || fileData.type !== 'video') return;
-
-    setGeneralFiles(prev => prev.map((f, i) =>
-      i === index ? { ...f, compressing: true, originalSize: f.file.size } : f
-    ));
-    setCompressing(true);
-    setCompressionProgress(0);
-
-    try {
-      const ffmpeg = await loadFFmpeg();
-
-      const inputName = 'input' + fileData.file.name.substring(fileData.file.name.lastIndexOf('.'));
-      const outputName = 'output.mp4';
-
-      await ffmpeg.writeFile(inputName, await fetchFile(fileData.file));
-
-      // Compress with good quality but smaller size
-      await ffmpeg.exec([
-        '-i', inputName,
-        '-c:v', 'libx264',
-        '-crf', '28',
-        '-preset', 'fast',
-        '-c:a', 'aac',
-        '-b:a', '128k',
-        '-movflags', '+faststart',
-        '-vf', 'scale=-2:720',
-        outputName
-      ]);
-
-      const data = await ffmpeg.readFile(outputName);
-      const blob = new Blob([data], { type: 'video/mp4' });
-      const compressedFile = new File([blob], fileData.file.name.replace(/\.[^/.]+$/, '.mp4'), { type: 'video/mp4' });
-
-      // Clean up
-      await ffmpeg.deleteFile(inputName);
-      await ffmpeg.deleteFile(outputName);
-
-      setGeneralFiles(prev => prev.map((f, i) =>
-        i === index ? {
-          ...f,
-          file: compressedFile,
-          compressing: false,
-          compressed: true,
-          compressedSize: compressedFile.size
-        } : f
-      ));
-    } catch (error) {
-      console.error('Compression failed:', error);
-      setGeneralFiles(prev => prev.map((f, i) =>
-        i === index ? { ...f, compressing: false } : f
-      ));
-    } finally {
-      setCompressing(false);
-      setCompressionProgress(0);
-    }
-  };
-
-  const compressAllVideos = async () => {
-    const videoIndices = generalFiles
-      .map((f, i) => f.type === 'video' && !f.compressed ? i : -1)
-      .filter(i => i !== -1);
-
-    for (const index of videoIndices) {
-      await compressVideo(index);
-    }
-  };
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  const handleDrop = useCallback(async (e: React.DragEvent, slotId: string) => {
+  const handleDrop = useCallback((e: React.DragEvent, slotId: string) => {
     e.preventDefault();
     setDragOver(null);
 
     const file = e.dataTransfer.files[0];
-    if (!file) return;
+    if (!file || !file.type.startsWith('image/')) return;
 
-    // Handle PDF files (convert to image)
-    if (file.type === 'application/pdf') {
-      setUploads((prev) => ({
-        ...prev,
-        [slotId]: { status: 'idle', converting: true },
-      }));
-      try {
-        const { file: imageFile, preview } = await pdfToImage(file);
-        setUploads((prev) => ({
-          ...prev,
-          [slotId]: { file: imageFile, preview, status: 'idle', converting: false },
-        }));
-      } catch (err) {
-        console.error('PDF conversion failed:', err);
-        setUploads((prev) => ({
-          ...prev,
-          [slotId]: { status: 'error', converting: false },
-        }));
-      }
-      return;
-    }
-
-    // Handle image files
-    if (file.type.startsWith('image/')) {
-      const preview = URL.createObjectURL(file);
-      setUploads((prev) => ({
-        ...prev,
-        [slotId]: { file, preview, status: 'idle' },
-      }));
-    }
+    const preview = URL.createObjectURL(file);
+    setUploads((prev) => ({
+      ...prev,
+      [slotId]: { file, preview, status: 'idle' },
+    }));
   }, []);
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, slotId: string) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, slotId: string) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !file.type.startsWith('image/')) return;
 
-    // Handle PDF files (convert to image)
-    if (file.type === 'application/pdf') {
-      setUploads((prev) => ({
-        ...prev,
-        [slotId]: { status: 'idle', converting: true },
-      }));
-      try {
-        const { file: imageFile, preview } = await pdfToImage(file);
-        setUploads((prev) => ({
-          ...prev,
-          [slotId]: { file: imageFile, preview, status: 'idle', converting: false },
-        }));
-      } catch (err) {
-        console.error('PDF conversion failed:', err);
-        setUploads((prev) => ({
-          ...prev,
-          [slotId]: { status: 'error', converting: false },
-        }));
-      }
-      return;
-    }
-
-    // Handle image files
-    if (file.type.startsWith('image/')) {
-      const preview = URL.createObjectURL(file);
-      setUploads((prev) => ({
-        ...prev,
-        [slotId]: { file, preview, status: 'idle' },
-      }));
-    }
+    const preview = URL.createObjectURL(file);
+    setUploads((prev) => ({
+      ...prev,
+      [slotId]: { file, preview, status: 'idle' },
+    }));
   };
 
   const handleGeneralFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -391,7 +210,6 @@ export default function AdminPage() {
     });
   };
 
-  const hasUncompressedVideos = generalFiles.some(f => f.type === 'video' && !f.compressed);
 
   // Flipbook upload state
   const [flipbookFile, setFlipbookFile] = useState<File | null>(null);
@@ -468,26 +286,6 @@ export default function AdminPage() {
           </p>
         </motion.div>
 
-        {/* Compression Progress */}
-        {compressing && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-primary/10 rounded-xl"
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <Scissors className="w-5 h-5 text-primary animate-pulse" />
-              <span className="font-semibold">Compressing video... {compressionProgress}%</span>
-            </div>
-            <div className="h-2 bg-primary/20 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all duration-300"
-                style={{ width: `${compressionProgress}%` }}
-              />
-            </div>
-          </motion.div>
-        )}
-
         {/* Key Images */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -524,16 +322,10 @@ export default function AdminPage() {
                     )}
                     <input
                       type="file"
-                      accept="image/*,.pdf,application/pdf"
+                      accept="image/*"
                       onChange={(e) => handleFileSelect(e, slot.id)}
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
-                    {upload?.converting && (
-                      <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
-                        <FileText className="w-8 h-8 animate-pulse mb-2" />
-                        <span className="text-xs">Converting PDF...</span>
-                      </div>
-                    )}
                     {upload?.status === 'uploading' && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                         <RefreshCw className="w-8 h-8 text-white animate-spin" />
@@ -618,32 +410,19 @@ export default function AdminPage() {
             <div className="mb-6">
               <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
                 <h3 className="font-semibold">Ready to Upload ({generalFiles.length} files)</h3>
-                <div className="flex gap-2">
-                  {hasUncompressedVideos && (
-                    <Button variant="outline" onClick={compressAllVideos} disabled={compressing}>
-                      <Scissors className="w-4 h-4 mr-2" />
-                      Compress Videos
-                    </Button>
-                  )}
-                  <Button onClick={uploadAllGeneral} disabled={compressing}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload All
-                  </Button>
-                </div>
+                <Button onClick={uploadAllGeneral}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload All
+                </Button>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {generalFiles.map((file, index) => (
                   <div key={index} className="relative group">
-                    <div className={`aspect-square rounded-lg overflow-hidden bg-muted ${file.compressing ? 'animate-pulse' : ''}`}>
+                    <div className="aspect-square rounded-lg overflow-hidden bg-muted">
                       {file.type === 'video' ? (
                         <video src={file.preview} className="w-full h-full object-cover" muted />
                       ) : (
                         <Image src={file.preview} alt={file.file.name} fill className="object-cover" />
-                      )}
-                      {file.compressing && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <Scissors className="w-6 h-6 text-white animate-spin" />
-                        </div>
                       )}
                     </div>
                     <button
@@ -652,24 +431,8 @@ export default function AdminPage() {
                     >
                       <X className="w-3 h-3" />
                     </button>
-                    {file.type === 'video' && !file.compressed && !file.compressing && (
-                      <button
-                        onClick={() => compressVideo(index)}
-                        className="absolute top-1 left-1 p-1 bg-primary text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Compress video"
-                      >
-                        <Scissors className="w-3 h-3" />
-                      </button>
-                    )}
                     <p className="text-xs truncate mt-1">{file.file.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatSize(file.file.size)}
-                      {file.compressed && file.originalSize && (
-                        <span className="text-green-500 ml-1">
-                          (-{Math.round((1 - file.file.size / file.originalSize) * 100)}%)
-                        </span>
-                      )}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{formatSize(file.file.size)}</p>
                   </div>
                 ))}
               </div>
@@ -805,8 +568,6 @@ export default function AdminPage() {
           className="p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg mb-8"
         >
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            <strong>Video compression:</strong> Reduces file size by ~50-70% while maintaining good quality (720p).
-            <br />
             <strong>Files saved to:</strong> <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">/public/uploads/</code>
             <br />
             <strong>Flipbook:</strong> Extracted to <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">/public/flipbook/</code> and viewable at <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">/book</code>
