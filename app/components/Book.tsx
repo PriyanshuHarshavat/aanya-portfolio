@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,18 @@ import Image from 'next/image';
 export default function Book() {
   const [showVideo, setShowVideo] = useState(false);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (showVideo || selectedImage !== null) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showVideo, selectedImage]);
 
   return (
     <section id="book" className="py-24 md:py-32 section-gradient-alt">
@@ -37,12 +49,12 @@ export default function Book() {
             viewport={{ once: true }}
             className="relative flex justify-center"
           >
-            <div className="relative w-72 md:w-80 aspect-[3/4] rounded-2xl shadow-2xl overflow-hidden">
-              <Image
+            <div className="relative w-72 md:w-80 rounded-2xl shadow-2xl overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={bookContent.coverImage}
                 alt={bookContent.title}
-                fill
-                className="object-cover"
+                className="w-full h-auto"
               />
             </div>
           </motion.div>
@@ -168,11 +180,12 @@ export default function Book() {
                   whileHover={{ scale: 1.02 }}
                   onClick={() => setSelectedImage(index)}
                 >
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={image.src}
                     alt={image.alt}
-                    fill
-                    className="object-cover transition-transform group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    style={{ imageRendering: 'auto', WebkitBackfaceVisibility: 'hidden', transform: 'translateZ(0)' }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                     <p className="absolute bottom-3 left-3 right-3 text-white text-sm font-medium">

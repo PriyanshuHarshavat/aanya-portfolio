@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Heart } from 'lucide-react';
 import { siteContent, footerContent } from '@/lib/content';
 
 export default function Footer() {
@@ -30,11 +29,6 @@ export default function Footer() {
               </a>
             ))}
           </nav>
-
-          {/* Copyright */}
-          <p className="text-sm text-muted-foreground flex items-center gap-1">
-            Made with <Heart className="w-4 h-4 text-pink-500 fill-current" />
-          </p>
         </div>
 
         <div className="mt-8 pt-8 border-t border-border text-center">

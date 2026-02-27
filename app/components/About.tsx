@@ -33,13 +33,13 @@ export default function About() {
         >
           {/* Image */}
           <motion.div variants={itemVariants} className="relative">
-            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
               {aboutContent.image ? (
-                <Image
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
                   src={aboutContent.image}
                   alt={siteContent.name}
-                  fill
-                  className="object-cover"
+                  className="w-full h-auto"
                 />
               ) : (
                 <div className="w-full h-full image-placeholder flex-col">

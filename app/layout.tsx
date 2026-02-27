@@ -17,10 +17,12 @@ export const metadata: Metadata = {
   description: "High school sophomore and published author passionate about making an impact through writing, leadership, and innovation.",
   keywords: ["Aanya Harshavat", "student portfolio", "published author", "high school", "leadership"],
   authors: [{ name: "Aanya Harshavat" }],
+  metadataBase: new URL("https://aanyaharshavat.com"),
   openGraph: {
     title: "Aanya Harshavat | Author, Scholar, Changemaker",
     description: "High school sophomore and published author passionate about making an impact.",
     type: "website",
+    url: "https://aanyaharshavat.com",
   },
 };
 

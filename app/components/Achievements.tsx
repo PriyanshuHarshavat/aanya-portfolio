@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   BookOpen,
@@ -8,11 +9,17 @@ import {
   Heart,
   Star,
   Lightbulb,
-  Library,
+  Briefcase,
+  Trophy,
+  ChevronRight,
   LucideIcon
 } from 'lucide-react';
-import { achievements } from '@/lib/content';
+import { achievements, AcademicJourney, ResearchExperience, CommunityService, SportsAndArts, ClubsAndLeadership } from '@/lib/content';
 import { cn } from '@/lib/utils';
+import AcademicJourneyModal from './AcademicJourneyModal';
+import ResearchExperienceModal from './ResearchExperienceModal';
+import CommunityServiceModal from './CommunityServiceModal';
+import ActivitiesModal from './ActivitiesModal';
 
 const iconMap: Record<string, LucideIcon> = {
   BookOpen,
@@ -21,7 +28,8 @@ const iconMap: Record<string, LucideIcon> = {
   Heart,
   Star,
   Lightbulb,
-  Library,
+  Briefcase,
+  Trophy,
 };
 
 const colorClasses = {
@@ -48,6 +56,7 @@ const sizeClasses = {
   small: 'bento-small',
 };
 
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -73,6 +82,42 @@ const itemVariants = {
 };
 
 export default function Achievements() {
+  const [showAcademicModal, setShowAcademicModal] = useState(false);
+  const [selectedJourney, setSelectedJourney] = useState<AcademicJourney | null>(null);
+  const [showResearchModal, setShowResearchModal] = useState(false);
+  const [selectedResearch, setSelectedResearch] = useState<ResearchExperience[] | null>(null);
+  const [showCommunityModal, setShowCommunityModal] = useState(false);
+  const [selectedCommunity, setSelectedCommunity] = useState<CommunityService | null>(null);
+  const [showSportsModal, setShowSportsModal] = useState(false);
+  const [selectedSports, setSelectedSports] = useState<SportsAndArts | null>(null);
+  const [showClubsModal, setShowClubsModal] = useState(false);
+  const [selectedClubs, setSelectedClubs] = useState<ClubsAndLeadership | null>(null);
+
+  const handleAcademicClick = (journey: AcademicJourney) => {
+    setSelectedJourney(journey);
+    setShowAcademicModal(true);
+  };
+
+  const handleResearchClick = (experiences: ResearchExperience[]) => {
+    setSelectedResearch(experiences);
+    setShowResearchModal(true);
+  };
+
+  const handleCommunityClick = (service: CommunityService) => {
+    setSelectedCommunity(service);
+    setShowCommunityModal(true);
+  };
+
+  const handleSportsClick = (sports: SportsAndArts) => {
+    setSelectedSports(sports);
+    setShowSportsModal(true);
+  };
+
+  const handleClubsClick = (clubs: ClubsAndLeadership) => {
+    setSelectedClubs(clubs);
+    setShowClubsModal(true);
+  };
+
   return (
     <section id="achievements" className="py-24 md:py-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -104,16 +149,38 @@ export default function Achievements() {
             const Icon = iconMap[achievement.icon] || Star;
             const colors = colorClasses[achievement.color];
             const size = sizeClasses[achievement.size || 'small'];
+            const hasAcademicJourney = !!achievement.academicJourney;
+            const hasResearchExperience = !!achievement.researchExperiences?.length;
+            const hasCommunityService = !!achievement.communityService;
+            const hasSportsAndArts = !!achievement.sportsAndArts;
+            const hasClubsAndLeadership = !!achievement.clubsAndLeadership;
+            const isClickable = hasAcademicJourney || hasResearchExperience || hasCommunityService || hasSportsAndArts || hasClubsAndLeadership;
+
+            const handleClick = () => {
+              if (hasAcademicJourney) {
+                handleAcademicClick(achievement.academicJourney!);
+              } else if (hasResearchExperience) {
+                handleResearchClick(achievement.researchExperiences!);
+              } else if (hasCommunityService) {
+                handleCommunityClick(achievement.communityService!);
+              } else if (hasSportsAndArts) {
+                handleSportsClick(achievement.sportsAndArts!);
+              } else if (hasClubsAndLeadership) {
+                handleClubsClick(achievement.clubsAndLeadership!);
+              }
+            };
 
             return (
               <motion.div
                 key={achievement.id}
                 variants={itemVariants}
+                onClick={handleClick}
                 className={cn(
                   'relative group rounded-2xl border p-6 md:p-8 overflow-hidden card-hover card-glow',
                   colors.bg,
                   colors.border,
-                  size
+                  size,
+                  isClickable && 'cursor-pointer'
                 )}
               >
                 {/* Background decoration */}
@@ -140,12 +207,109 @@ export default function Achievements() {
                   <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
                     {achievement.description}
                   </p>
+
+                  {/* Link */}
+                  {achievement.link && (
+                    <a
+                      href={achievement.link}
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-3 flex items-center text-primary text-sm font-medium group-hover:gap-2 transition-all"
+                    >
+                      <span>{achievement.linkText || 'Learn More'}</span>
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </a>
+                  )}
+
+                  {/* Clickable Card Preview */}
+                  {hasAcademicJourney && (
+                    <div className="mt-3 flex items-center text-primary text-sm font-medium group-hover:gap-2 transition-all">
+                      <span>View Journey</span>
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  )}
+                  {hasResearchExperience && (
+                    <div className="mt-3 flex items-center text-emerald-500 text-sm font-medium group-hover:gap-2 transition-all">
+                      <span>View Research</span>
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  )}
+                  {hasCommunityService && (
+                    <div className="mt-3 flex items-center text-pink-500 text-sm font-medium group-hover:gap-2 transition-all">
+                      <span>View Service</span>
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  )}
+                  {hasSportsAndArts && (
+                    <div className="mt-3 flex items-center text-emerald-500 text-sm font-medium group-hover:gap-2 transition-all">
+                      <span>View Activities</span>
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  )}
+                  {hasClubsAndLeadership && (
+                    <div className="mt-3 flex items-center text-primary text-sm font-medium group-hover:gap-2 transition-all">
+                      <span>View Details</span>
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  )}
                 </div>
               </motion.div>
             );
           })}
         </motion.div>
       </div>
+
+      {/* Academic Journey Modal */}
+      {selectedJourney && (
+        <AcademicJourneyModal
+          isOpen={showAcademicModal}
+          onClose={() => setShowAcademicModal(false)}
+          journey={selectedJourney}
+        />
+      )}
+
+      {/* Research Experience Modal */}
+      {selectedResearch && (
+        <ResearchExperienceModal
+          isOpen={showResearchModal}
+          onClose={() => setShowResearchModal(false)}
+          experiences={selectedResearch}
+        />
+      )}
+
+      {/* Community Service Modal */}
+      {selectedCommunity && (
+        <CommunityServiceModal
+          isOpen={showCommunityModal}
+          onClose={() => setShowCommunityModal(false)}
+          service={selectedCommunity}
+        />
+      )}
+
+      {/* Sports & Arts Modal */}
+      {selectedSports && (
+        <ActivitiesModal
+          isOpen={showSportsModal}
+          onClose={() => setShowSportsModal(false)}
+          title="Sports & Arts"
+          subtitle="Athletics and artistic pursuits"
+          icon={Trophy}
+          iconGradient="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500"
+          categories={selectedSports.categories}
+        />
+      )}
+
+      {/* Clubs & Leadership Modal */}
+      {selectedClubs && (
+        <ActivitiesModal
+          isOpen={showClubsModal}
+          onClose={() => setShowClubsModal(false)}
+          title="Clubs & Leadership"
+          subtitle="Organizations and achievements"
+          icon={Users}
+          iconGradient="bg-gradient-to-br from-primary via-purple-500 to-accent"
+          categories={selectedClubs.categories}
+        />
+      )}
     </section>
   );
 }

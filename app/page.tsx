@@ -4,8 +4,6 @@ import About from './components/About';
 import Achievements from './components/Achievements';
 import Book from './components/Book';
 import Videos from './components/Videos';
-import Activities from './components/Activities';
-import Skills from './components/Skills';
 import Testimonials from './components/Testimonials';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
@@ -21,13 +19,11 @@ export default function Home() {
         <Achievements />
         <Book />
         <Videos />
-        <Activities />
-        <Skills />
         <Testimonials />
         <Contact />
       </main>
       <Footer />
-      <ViewportToggle />
+      {process.env.NODE_ENV === 'development' && <ViewportToggle />}
     </>
   );
 }

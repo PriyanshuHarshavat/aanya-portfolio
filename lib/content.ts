@@ -9,6 +9,83 @@ export interface SiteContent {
   github?: string;
 }
 
+export interface Course {
+  name: string;
+  type: 'AP' | 'Honors' | 'Core';
+  subject: string;
+}
+
+export interface AcademicYear {
+  year: string;
+  semester: string;
+  courses: Course[];
+}
+
+export interface AcademicJourney {
+  gpa: string;
+  currentYear: string;
+  years: AcademicYear[];
+}
+
+export interface ResearchExperience {
+  id: string;
+  institution: string;
+  department: string;
+  projectTitle: string;
+  duration: string;
+  period: string;
+  description: string;
+  outcomes: string[];
+  skills: string[];
+}
+
+export interface VolunteerOrg {
+  id: string;
+  name: string;
+  role: string;
+  period: string;
+  description: string;
+  icon: string;
+}
+
+export interface CommunityServiceCategory {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  organizations: VolunteerOrg[];
+}
+
+export interface CommunityService {
+  totalHours: string;
+  yearsActive: string;
+  categories: CommunityServiceCategory[];
+}
+
+export interface Activity {
+  id: string;
+  name: string;
+  description: string;
+  period: string;
+  highlight?: string;
+}
+
+export interface ActivityCategory {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  activities: Activity[];
+}
+
+export interface SportsAndArts {
+  categories: ActivityCategory[];
+}
+
+export interface ClubsAndLeadership {
+  categories: ActivityCategory[];
+}
+
 export interface Achievement {
   id: string;
   title: string;
@@ -16,6 +93,13 @@ export interface Achievement {
   icon: string;
   color: 'primary' | 'accent' | 'highlight';
   size?: 'large' | 'medium' | 'small';
+  link?: string;
+  linkText?: string;
+  academicJourney?: AcademicJourney;
+  researchExperiences?: ResearchExperience[];
+  communityService?: CommunityService;
+  sportsAndArts?: SportsAndArts;
+  clubsAndLeadership?: ClubsAndLeadership;
 }
 
 export interface Project {
@@ -74,8 +158,8 @@ export interface YouTubeVideo {
 export const siteContent: SiteContent = {
   name: "Aanya Harshavat",
   tagline: "Author | Scholar | Changemaker",
-  email: "contact@aanyaharshavat.com",
-  linkedin: "https://linkedin.com/in/aanya-harshavat",
+  email: "aanyaharshavat@gmail.com",
+  linkedin: "",
   github: "",
 };
 
@@ -111,54 +195,256 @@ export const achievements: Achievement[] = [
     description: "Wrote and published \"Annie and Froggy Make a Friend,\" a children's book promoting friendship and inclusion.",
     icon: "BookOpen",
     color: "primary",
-    size: "large",
+    size: "small",
+    link: "#book",
+    linkText: "View My Book",
   },
   {
     id: "2",
-    title: "School Speaker",
-    description: "Presented book readings and author talks at multiple elementary schools, engaging hundreds of young students.",
-    icon: "Users",
+    title: "Academic Excellence",
+    description: "Challenging coursework while balancing extracurriculars and community service.",
+    icon: "Award",
     color: "accent",
-    size: "medium",
+    size: "small",
+    academicJourney: {
+      gpa: "4.0",
+      currentYear: "Sophomore",
+      years: [
+        {
+          year: "Freshman",
+          semester: "2024-2025",
+          courses: [
+            { name: "Honors English 9", type: "Honors", subject: "English" },
+            { name: "Honors Geometry", type: "Honors", subject: "Math" },
+            { name: "Honors Biology", type: "Honors", subject: "Science" },
+            { name: "AP Human Geography", type: "AP", subject: "Social Studies" },
+            { name: "Spanish II", type: "Core", subject: "Language" },
+            { name: "Art Foundations", type: "Core", subject: "Arts" },
+          ]
+        },
+        {
+          year: "Sophomore",
+          semester: "2025-2026",
+          courses: [
+            { name: "Honors English 10", type: "Honors", subject: "English" },
+            { name: "Honors Algebra II", type: "Honors", subject: "Math" },
+            { name: "Honors Chemistry", type: "Honors", subject: "Science" },
+            { name: "AP World History", type: "AP", subject: "Social Studies" },
+            { name: "AP Computer Science Principles", type: "AP", subject: "Technology" },
+            { name: "Spanish III", type: "Core", subject: "Language" },
+          ]
+        },
+      ]
+    }
   },
   {
     id: "3",
-    title: "Library Partner",
-    description: "Partnered with local libraries to donate books and promote literacy in the community.",
-    icon: "Library",
+    title: "Research Experience",
+    description: "Hands-on research at top universities, exploring the intersection of psychology and technology.",
+    icon: "Briefcase",
     color: "highlight",
-    size: "medium",
+    size: "small",
+    researchExperiences: [
+      {
+        id: "1",
+        institution: "Northwestern University",
+        department: "Department of Psychology",
+        projectTitle: "AI-Assisted Analysis of Adolescent Anxiety Patterns",
+        duration: "6 weeks",
+        period: "Summer 2025",
+        description: "Contributed to a research project examining how artificial intelligence can be used to identify and analyze anxiety patterns in adolescents transitioning to new school environments. Worked alongside graduate students and faculty to review literature, assist with data organization, and explore how AI tools can support mental health research.",
+        outcomes: [
+          "Assisted in literature review covering 30+ peer-reviewed articles on adolescent anxiety",
+          "Learned to use AI-powered text analysis tools for psychological research",
+          "Contributed to preliminary findings on common anxiety triggers during school transitions",
+          "Presented research summary to the lab group at the end of the program"
+        ],
+        skills: ["Research Methods", "Literature Review", "AI Tools", "Data Organization", "Academic Writing", "Presentation"]
+      }
+    ]
   },
   {
     id: "4",
-    title: "Academic Excellence",
-    description: "Maintaining strong academics while balancing extracurriculars and community service.",
-    icon: "Award",
-    color: "primary",
+    title: "Leadership & Community",
+    description: "Inspiring the next generation through tutoring, volunteering, and dedicated community service.",
+    icon: "Heart",
+    color: "accent",
     size: "small",
+    communityService: {
+      totalHours: "150+",
+      yearsActive: "3",
+      categories: [
+        {
+          id: "1",
+          name: "Education & Tutoring",
+          icon: "GraduationCap",
+          color: "blue",
+          organizations: [
+            {
+              id: "1",
+              name: "Community Tutoring Program",
+              role: "Volunteer Tutor",
+              period: "2023 - Present",
+              description: "Providing free tutoring in math and reading to underserved elementary and middle school students, helping them build confidence and improve academic performance.",
+              icon: "BookOpen"
+            }
+          ]
+        },
+        {
+          id: "2",
+          name: "Hunger Relief",
+          icon: "Heart",
+          color: "orange",
+          organizations: [
+            {
+              id: "2",
+              name: "Feed My Starving Children",
+              role: "Volunteer",
+              period: "2023 - Present",
+              description: "Packing nutritious meals for children facing food insecurity around the world. Participated in multiple packing events with family and community groups.",
+              icon: "Package"
+            },
+            {
+              id: "3",
+              name: "Local Food Pantry",
+              role: "Volunteer",
+              period: "2024 - Present",
+              description: "Sorting donations, stocking shelves, and assisting families in need at the community food pantry.",
+              icon: "ShoppingBag"
+            }
+          ]
+        },
+        {
+          id: "3",
+          name: "Community Outreach",
+          icon: "Users",
+          color: "purple",
+          organizations: [
+            {
+              id: "4",
+              name: "Library Reading Program",
+              role: "Guest Reader",
+              period: "2025 - Present",
+              description: "Reading stories to young children at local libraries and schools, inspiring a love of reading and literacy.",
+              icon: "Book"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     id: "5",
-    title: "Youth Leadership",
-    description: "Demonstrating that young people can make an impact through creativity and initiative.",
-    icon: "Star",
-    color: "accent",
+    title: "Sports & Arts",
+    description: "Balancing athletics and artistic pursuits with dedication and passion.",
+    icon: "Trophy",
+    color: "highlight",
     size: "small",
+    sportsAndArts: {
+      categories: [
+        {
+          id: "1",
+          name: "Basketball",
+          icon: "Trophy",
+          color: "orange",
+          activities: [
+            {
+              id: "1",
+              name: "School Basketball Team",
+              description: "Competitive player on the school basketball team, developing teamwork, discipline, and athletic skills.",
+              period: "Grade 4 - Present",
+              highlight: "6+ years"
+            },
+            {
+              id: "2",
+              name: "AAU Basketball",
+              description: "Currently competing in AAU basketball, playing at a higher competitive level with elite training and tournament experience.",
+              period: "Current",
+              highlight: "Competitive League"
+            }
+          ]
+        },
+        {
+          id: "2",
+          name: "Performing Arts",
+          icon: "Music",
+          color: "purple",
+          activities: [
+            {
+              id: "3",
+              name: "Indian Classical Dance",
+              description: "Training in traditional Indian classical dance forms, learning cultural heritage, rhythm, expression, and discipline.",
+              period: "Age 5 - Present",
+              highlight: "10+ years"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     id: "6",
-    title: "Community Impact",
-    description: "Dedicated to inspiring the next generation of readers and writers.",
-    icon: "Heart",
-    color: "highlight",
+    title: "Clubs & Leadership",
+    description: "Active in school organizations, competitions, and student government.",
+    icon: "Users",
+    color: "primary",
     size: "small",
+    clubsAndLeadership: {
+      categories: [
+        {
+          id: "1",
+          name: "Student Government",
+          icon: "Users",
+          color: "blue",
+          activities: [
+            {
+              id: "1",
+              name: "Student Council",
+              description: "Serving as an Executive Member, helping plan school events, represent student voice, and lead initiatives.",
+              period: "Current",
+              highlight: "Executive Member"
+            }
+          ]
+        },
+        {
+          id: "2",
+          name: "Competitions & Awards",
+          icon: "Award",
+          color: "amber",
+          activities: [
+            {
+              id: "2",
+              name: "FBLA Business Plan",
+              description: "Developed and presented a comprehensive business plan, demonstrating entrepreneurship and presentation skills.",
+              period: "2025",
+              highlight: "3rd Place - District"
+            }
+          ]
+        },
+        {
+          id: "3",
+          name: "School Clubs",
+          icon: "Users",
+          color: "green",
+          activities: [
+            {
+              id: "3",
+              name: "Various Club Memberships",
+              description: "Active member of multiple school clubs, engaging with diverse interests and building connections.",
+              period: "Ongoing",
+              highlight: "Multiple Clubs"
+            }
+          ]
+        }
+      ]
+    }
   },
 ];
 
 export const bookContent: Book = {
   title: "Annie and Froggy Make a Friend",
   description: "A heartwarming children's book about friendship, inclusion, and the magic of making new friends.",
-  coverImage: "/uploads/PXL_20260212_222131269.MP~3.jpg",
+  coverImage: "/uploads/book-cover.png",
   purchaseLink: "",
   readOnlineLink: "/book",
   synopsis: "\"Annie and Froggy Make a Friend\" is a delightful story that teaches young readers about the importance of kindness, inclusion, and the joy of making new friends. Through colorful illustrations and an engaging narrative, children learn that friendship can be found in the most unexpected places.",
@@ -315,7 +601,6 @@ export const footerContent = {
     { label: "Achievements", href: "#achievements" },
     { label: "My Book", href: "#book" },
     { label: "Videos", href: "#videos" },
-    { label: "Activities", href: "#activities" },
     { label: "Contact", href: "#contact" },
   ],
   copyright: `© ${new Date().getFullYear()} Aanya Harshavat. All rights reserved.`,

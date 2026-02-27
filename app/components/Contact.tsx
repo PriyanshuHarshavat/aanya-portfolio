@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Mail, Linkedin, Github, Send, ArrowRight } from 'lucide-react';
+import { Linkedin, Github, Send, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { siteContent } from '@/lib/content';
 
@@ -68,44 +68,35 @@ export default function Contact() {
           </motion.div>
 
           {/* Social Links */}
-          <div className="flex justify-center gap-4">
-            {siteContent.email && (
-              <motion.a
-                href={`mailto:${siteContent.email}`}
-                className="p-4 rounded-full glass hover:bg-primary/10 transition-colors group"
-                whileHover={{ scale: 1.1, y: -4 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Mail className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-              </motion.a>
-            )}
+          {(siteContent.linkedin || siteContent.github) && (
+            <div className="flex justify-center gap-4">
+              {siteContent.linkedin && (
+                <motion.a
+                  href={siteContent.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-4 rounded-full glass hover:bg-primary/10 transition-colors group"
+                  whileHover={{ scale: 1.1, y: -4 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Linkedin className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                </motion.a>
+              )}
 
-            {siteContent.linkedin && (
-              <motion.a
-                href={siteContent.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-4 rounded-full glass hover:bg-primary/10 transition-colors group"
-                whileHover={{ scale: 1.1, y: -4 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Linkedin className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-              </motion.a>
-            )}
-
-            {siteContent.github && (
-              <motion.a
-                href={siteContent.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-4 rounded-full glass hover:bg-primary/10 transition-colors group"
-                whileHover={{ scale: 1.1, y: -4 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Github className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-              </motion.a>
-            )}
-          </div>
+              {siteContent.github && (
+                <motion.a
+                  href={siteContent.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-4 rounded-full glass hover:bg-primary/10 transition-colors group"
+                  whileHover={{ scale: 1.1, y: -4 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Github className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                </motion.a>
+              )}
+            </div>
+          )}
         </motion.div>
       </div>
     </section>

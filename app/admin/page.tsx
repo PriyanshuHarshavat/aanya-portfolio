@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Upload, Image as ImageIcon, Video, Check, X, RefreshCw, FolderOpen, BookOpen, FileArchive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface UploadedFile {
   name: string;
@@ -51,7 +52,27 @@ const uploadSlots: UploadSlot[] = [
   },
 ];
 
+// Only available in development
 export default function AdminPage() {
+  if (process.env.NODE_ENV === 'production') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-6xl font-bold text-muted-foreground mb-4">404</h1>
+          <p className="text-muted-foreground mb-6">Page not found</p>
+          <Link href="/" className="text-primary hover:underline">
+            ← Back to home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return <AdminContent />;
+}
+
+function AdminContent() {
+
   const [uploads, setUploads] = useState<Record<string, { file?: File; preview?: string; status: 'idle' | 'uploading' | 'success' | 'error' }>>({});
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [mediaLibrary, setMediaLibrary] = useState<UploadedFile[]>([]);

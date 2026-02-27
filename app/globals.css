@@ -366,27 +366,21 @@
 
 @media (min-width: 768px) {
   .bento-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
   }
 }
 
-.bento-large {
-  grid-column: span 2;
-  grid-row: span 2;
-}
-
-.bento-medium {
-  grid-column: span 2;
-}
-
+.bento-large,
+.bento-medium,
 .bento-small {
   grid-column: span 1;
 }
 
 @media (max-width: 767px) {
   .bento-large,
-  .bento-medium {
+  .bento-medium,
+  .bento-small {
     grid-column: span 2;
     grid-row: span 1;
   }
@@ -398,6 +392,11 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 ::selection {
