@@ -62,7 +62,7 @@ export interface CommunityService {
   categories: CommunityServiceCategory[];
 }
 
-export interface Activity {
+export interface ActivityItem {
   id: string;
   name: string;
   description: string;
@@ -75,7 +75,7 @@ export interface ActivityCategory {
   name: string;
   icon: string;
   color: string;
-  activities: Activity[];
+  activities: ActivityItem[];
 }
 
 export interface SportsAndArts {
