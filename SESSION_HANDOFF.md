@@ -1,5 +1,20 @@
 # Aanya Portfolio - Session Handoff
 
+## Starting a New Session
+
+**Option 1:** Start Claude Code from the project directory:
+```bash
+cd /home/pharshavat/projects/aanya-portfolio
+claude
+```
+
+**Option 2:** Start Claude Code anywhere and say:
+```
+Go to /home/pharshavat/projects/aanya-portfolio and read SESSION_HANDOFF.md to continue where we left off
+```
+
+---
+
 ## Project Overview
 Portfolio website for **Aanya Harshavat**, a high school sophomore and published author of "Annie and Froggy Make a Friend" - a children's book about dealing with anxiety when starting school in a new place.
 
