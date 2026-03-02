@@ -9,17 +9,51 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import ViewportToggle from './components/ViewportToggle';
 
-export default function Home() {
+import {
+  getSiteContent,
+  getHeroContent,
+  getAboutContent,
+  getAchievements,
+  getGalleryImages,
+  getTestimonials,
+  getYoutubeVideos,
+  getYoutubeSection,
+} from '@/lib/data';
+
+export const revalidate = 60; // Revalidate every 60 seconds
+
+export default async function Home() {
+  // Fetch all data in parallel
+  const [
+    siteContent,
+    heroContent,
+    aboutContent,
+    achievements,
+    galleryImages,
+    testimonials,
+    youtubeVideos,
+    youtubeSection,
+  ] = await Promise.all([
+    getSiteContent(),
+    getHeroContent(),
+    getAboutContent(),
+    getAchievements(),
+    getGalleryImages(),
+    getTestimonials(),
+    getYoutubeVideos(),
+    getYoutubeSection(),
+  ]);
+
   return (
     <>
       <Header />
       <main>
-        <Hero />
-        <About />
-        <Achievements />
-        <Book />
-        <Videos />
-        <Testimonials />
+        <Hero siteContent={siteContent} heroContent={heroContent} />
+        <About siteContent={siteContent} aboutContent={aboutContent} />
+        <Achievements achievements={achievements} />
+        <Book galleryImages={galleryImages} />
+        <Videos videos={youtubeVideos} section={youtubeSection} />
+        <Testimonials testimonials={testimonials} />
         <Contact />
       </main>
       <Footer />

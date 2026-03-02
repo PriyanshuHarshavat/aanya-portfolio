@@ -4,10 +4,31 @@ import { motion } from 'framer-motion';
 import { ArrowDown, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { heroContent, siteContent } from '@/lib/content';
+import {
+  heroContent as defaultHeroContent,
+  siteContent as defaultSiteContent,
+  type SiteContent,
+} from '@/lib/content';
 import Image from 'next/image';
 
-export default function Hero() {
+interface HeroContent {
+  headline: string;
+  headlineAccent: string;
+  subheadline: string;
+  cta: string;
+  badge: string;
+  image: string;
+}
+
+interface HeroProps {
+  siteContent?: SiteContent;
+  heroContent?: HeroContent;
+}
+
+export default function Hero({
+  siteContent = defaultSiteContent,
+  heroContent = defaultHeroContent,
+}: HeroProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-12 md:pt-20">
       {/* Animated Background Blobs */}

@@ -14,12 +14,24 @@ import {
   ChevronRight,
   LucideIcon
 } from 'lucide-react';
-import { achievements, AcademicJourney, ResearchExperience, CommunityService, SportsAndArts, ClubsAndLeadership } from '@/lib/content';
+import {
+  achievements as defaultAchievements,
+  type Achievement,
+  type AcademicJourney,
+  type ResearchExperience,
+  type CommunityService,
+  type SportsAndArts,
+  type ClubsAndLeadership,
+} from '@/lib/content';
 import { cn } from '@/lib/utils';
 import AcademicJourneyModal from './AcademicJourneyModal';
 import ResearchExperienceModal from './ResearchExperienceModal';
 import CommunityServiceModal from './CommunityServiceModal';
 import ActivitiesModal from './ActivitiesModal';
+
+interface AchievementsProps {
+  achievements?: Achievement[];
+}
 
 const iconMap: Record<string, LucideIcon> = {
   BookOpen,
@@ -81,7 +93,9 @@ const itemVariants = {
   },
 };
 
-export default function Achievements() {
+export default function Achievements({
+  achievements = defaultAchievements,
+}: AchievementsProps) {
   const [showAcademicModal, setShowAcademicModal] = useState(false);
   const [selectedJourney, setSelectedJourney] = useState<AcademicJourney | null>(null);
   const [showResearchModal, setShowResearchModal] = useState(false);

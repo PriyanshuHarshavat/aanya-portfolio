@@ -3,10 +3,17 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
-import { testimonials } from '@/lib/content';
+import { testimonials as defaultTestimonials, type Testimonial } from '@/lib/content';
 import Image from 'next/image';
 
-export default function Testimonials() {
+interface TestimonialsProps {
+  testimonials?: Testimonial[];
+}
+
+export default function Testimonials({
+  testimonials: propTestimonials,
+}: TestimonialsProps) {
+  const testimonials = propTestimonials ?? defaultTestimonials;
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const next = () => {

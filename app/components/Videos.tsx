@@ -4,9 +4,27 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, X, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { youtubeVideos, youtubeSection } from '@/lib/content';
+import {
+  youtubeVideos as defaultVideos,
+  youtubeSection as defaultSection,
+  type YouTubeVideo,
+} from '@/lib/content';
 
-export default function Videos() {
+interface VideosProps {
+  videos?: YouTubeVideo[];
+  section?: {
+    title: string;
+    subtitle: string;
+    channelUrl: string;
+  };
+}
+
+export default function Videos({
+  videos,
+  section,
+}: VideosProps) {
+  const youtubeVideos = videos ?? defaultVideos;
+  const youtubeSection = section ?? defaultSection;
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
   const getThumbnail = (videoId: string) =>

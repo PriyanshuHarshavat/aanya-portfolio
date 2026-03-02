@@ -4,10 +4,20 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { bookContent, bookGallery, bookVideo } from '@/lib/content';
+import {
+  bookContent,
+  bookGallery as defaultBookGallery,
+  bookVideo,
+  type BookGalleryImage,
+} from '@/lib/content';
 import Image from 'next/image';
 
-export default function Book() {
+interface BookProps {
+  galleryImages?: BookGalleryImage[];
+}
+
+export default function Book({ galleryImages }: BookProps) {
+  const bookGallery = galleryImages ?? defaultBookGallery;
   const [showVideo, setShowVideo] = useState(false);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
 

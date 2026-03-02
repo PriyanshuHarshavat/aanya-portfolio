@@ -2,8 +2,24 @@
 
 import { motion } from 'framer-motion';
 import { Quote } from 'lucide-react';
-import { aboutContent, siteContent } from '@/lib/content';
+import {
+  aboutContent as defaultAboutContent,
+  siteContent as defaultSiteContent,
+  type SiteContent,
+} from '@/lib/content';
 import Image from 'next/image';
+
+interface AboutContentType {
+  title: string;
+  bio: string[];
+  image: string;
+  highlights: { label: string; value: string }[];
+}
+
+interface AboutProps {
+  siteContent?: SiteContent;
+  aboutContent?: AboutContentType;
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -20,7 +36,10 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-export default function About() {
+export default function About({
+  siteContent = defaultSiteContent,
+  aboutContent = defaultAboutContent,
+}: AboutProps) {
   return (
     <section id="about" className="py-24 md:py-32 section-gradient">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

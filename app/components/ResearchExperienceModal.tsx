@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Briefcase, GraduationCap, Calendar, Clock, Target, Lightbulb } from 'lucide-react';
+import { X, Briefcase, GraduationCap, Calendar, Clock, Target, Lightbulb, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ResearchExperience } from '@/lib/content';
 
 interface Props {
@@ -12,9 +12,32 @@ interface Props {
 }
 
 export default function ResearchExperienceModal({ isOpen, onClose, experiences }: Props) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
+
+  const goToNext = useCallback(() => {
+    if (currentIndex < experiences.length - 1) {
+      setDirection(1);
+      setCurrentIndex(currentIndex + 1);
+    }
+  }, [currentIndex, experiences.length]);
+
+  const goToPrev = useCallback(() => {
+    if (currentIndex > 0) {
+      setDirection(-1);
+      setCurrentIndex(currentIndex - 1);
+    }
+  }, [currentIndex]);
+
+  const goToIndex = (index: number) => {
+    setDirection(index > currentIndex ? 1 : -1);
+    setCurrentIndex(index);
+  };
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      setCurrentIndex(0);
     } else {
       document.body.style.overflow = '';
     }
@@ -22,6 +45,26 @@ export default function ResearchExperienceModal({ isOpen, onClose, experiences }
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') {
+        goToNext();
+      } else if (e.key === 'ArrowLeft') {
+        goToPrev();
+      } else if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, goToNext, goToPrev, onClose]);
+
+  const experience = experiences[currentIndex];
 
   return (
     <AnimatePresence>
@@ -81,104 +124,156 @@ export default function ResearchExperienceModal({ isOpen, onClose, experiences }
               </div>
             </div>
 
-            {/* Experiences */}
-            <div className="p-4 md:p-8 space-y-6">
-              {experiences.map((experience, index) => (
-                <motion.div
-                  key={experience.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                  className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800/50 overflow-hidden"
-                >
-                  {/* Experience Header */}
-                  <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 dark:from-emerald-500/20 dark:via-teal-500/20 dark:to-cyan-500/20 p-4 md:p-6 border-b border-slate-200 dark:border-white/10">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center shadow-lg flex-shrink-0">
-                        <GraduationCap className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white">
-                          {experience.institution}
-                        </h3>
-                        <p className="text-emerald-600 dark:text-emerald-400 font-medium text-sm md:text-base">
-                          {experience.department}
-                        </p>
-                        <div className="flex flex-wrap gap-3 mt-2 text-xs md:text-sm text-slate-500 dark:text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5" />
-                            {experience.period}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5" />
-                            {experience.duration}
-                          </span>
+            {/* Experience Carousel */}
+            <div className="p-4 md:p-8 relative">
+              {/* Navigation Arrows */}
+              {experiences.length > 1 && (
+                <>
+                  <button
+                    onClick={goToPrev}
+                    disabled={currentIndex === 0}
+                    className={`absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all ${
+                      currentIndex === 0
+                        ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-white shadow-lg hover:scale-110 hover:bg-emerald-50 dark:hover:bg-emerald-900/30'
+                    }`}
+                  >
+                    <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+                  </button>
+                  <button
+                    onClick={goToNext}
+                    disabled={currentIndex === experiences.length - 1}
+                    className={`absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all ${
+                      currentIndex === experiences.length - 1
+                        ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-white shadow-lg hover:scale-110 hover:bg-emerald-50 dark:hover:bg-emerald-900/30'
+                    }`}
+                  >
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+                  </button>
+                </>
+              )}
+
+              {/* Experience Content with Animation */}
+              <div className="mx-8 md:mx-16 overflow-hidden">
+                <AnimatePresence mode="wait" custom={direction}>
+                  <motion.div
+                    key={currentIndex}
+                    custom={direction}
+                    initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800/50 overflow-hidden"
+                  >
+                    {/* Experience Header */}
+                    <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 dark:from-emerald-500/20 dark:via-teal-500/20 dark:to-cyan-500/20 p-4 md:p-6 border-b border-slate-200 dark:border-white/10">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center shadow-lg flex-shrink-0">
+                          <GraduationCap className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white">
+                            {experience.institution}
+                          </h3>
+                          <p className="text-emerald-600 dark:text-emerald-400 font-medium text-sm md:text-base">
+                            {experience.department}
+                          </p>
+                          <div className="flex flex-wrap gap-3 mt-2 text-xs md:text-sm text-slate-500 dark:text-slate-400">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5" />
+                              {experience.period}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              {experience.duration}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Project Details */}
-                  <div className="p-4 md:p-6 space-y-5">
-                    {/* Project Title */}
-                    <div>
-                      <h4 className="text-base md:text-lg font-bold text-slate-800 dark:text-white mb-2">
-                        {experience.projectTitle}
-                      </h4>
-                      <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed">
-                        {experience.description}
-                      </p>
-                    </div>
-
-                    {/* Outcomes */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Target className="w-4 h-4 text-emerald-500" />
-                        <h5 className="font-semibold text-slate-800 dark:text-white text-sm md:text-base">
-                          Key Outcomes
-                        </h5>
+                    {/* Project Details */}
+                    <div className="p-4 md:p-6 space-y-5">
+                      {/* Project Title */}
+                      <div>
+                        <h4 className="text-base md:text-lg font-bold text-slate-800 dark:text-white mb-2">
+                          {experience.projectTitle}
+                        </h4>
+                        <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed">
+                          {experience.description}
+                        </p>
                       </div>
-                      <ul className="space-y-2">
-                        {experience.outcomes.map((outcome, i) => (
-                          <motion.li
-                            key={i}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.7 + i * 0.05 }}
-                            className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300"
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 flex-shrink-0" />
-                            {outcome}
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </div>
 
-                    {/* Skills */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Lightbulb className="w-4 h-4 text-amber-500" />
-                        <h5 className="font-semibold text-slate-800 dark:text-white text-sm md:text-base">
-                          Skills Developed
-                        </h5>
+                      {/* Outcomes */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Target className="w-4 h-4 text-emerald-500" />
+                          <h5 className="font-semibold text-slate-800 dark:text-white text-sm md:text-base">
+                            Key Outcomes
+                          </h5>
+                        </div>
+                        <ul className="space-y-2">
+                          {experience.outcomes.map((outcome, i) => (
+                            <li
+                              key={i}
+                              className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 flex-shrink-0" />
+                              {outcome}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {experience.skills.map((skill, i) => (
-                          <motion.span
-                            key={i}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.8 + i * 0.03 }}
-                            className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-700 dark:text-slate-200"
-                          >
-                            {skill}
-                          </motion.span>
-                        ))}
+
+                      {/* Skills */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Lightbulb className="w-4 h-4 text-amber-500" />
+                          <h5 className="font-semibold text-slate-800 dark:text-white text-sm md:text-base">
+                            Skills Developed
+                          </h5>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {experience.skills.map((skill, i) => (
+                            <span
+                              key={i}
+                              className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-700 dark:text-slate-200"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Dot Indicators */}
+              {experiences.length > 1 && (
+                <div className="flex justify-center gap-2 mt-6">
+                  {experiences.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToIndex(index)}
+                      className={`transition-all duration-300 ${
+                        index === currentIndex
+                          ? 'w-8 h-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full'
+                          : 'w-2.5 h-2.5 bg-slate-300 dark:bg-slate-600 rounded-full hover:bg-slate-400 dark:hover:bg-slate-500'
+                      }`}
+                      aria-label={`Go to experience ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Experience Counter */}
+              {experiences.length > 1 && (
+                <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-3">
+                  {currentIndex + 1} of {experiences.length}
+                </p>
+              )}
             </div>
           </motion.div>
         </motion.div>
