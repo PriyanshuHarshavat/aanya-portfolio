@@ -13,6 +13,7 @@ interface AboutContentType {
   title: string;
   bio: string[];
   image: string;
+  imageAlt?: string;
   highlights: { label: string; value: string }[];
 }
 
@@ -57,7 +58,7 @@ export default function About({
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={aboutContent.image}
-                  alt={siteContent.name}
+                  alt={aboutContent.imageAlt || `${siteContent.name} - About`}
                   className="w-full h-auto"
                 />
               ) : (

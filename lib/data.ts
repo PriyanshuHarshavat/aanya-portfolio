@@ -70,6 +70,7 @@ export async function getHeroContent() {
       cta: contentMap.hero_cta || staticHeroContent.cta,
       badge: contentMap.hero_badge || staticHeroContent.badge,
       image: contentMap.hero_image || staticHeroContent.image,
+      imageAlt: contentMap.hero_image_alt || '',
     }
   } catch {
     return staticHeroContent
@@ -108,6 +109,7 @@ export async function getAboutContent() {
       title: contentMap.about_title || staticAboutContent.title,
       bio,
       image: contentMap.about_image || staticAboutContent.image,
+      imageAlt: contentMap.about_image_alt || '',
       highlights,
     }
   } catch {
@@ -532,5 +534,68 @@ export async function getYoutubeSection() {
     }
   } catch {
     return staticYoutubeSection
+  }
+}
+
+// ============================================
+// SEO SETTINGS
+// ============================================
+
+export interface SeoSettings {
+  metaTitle: string
+  metaDescription: string
+  metaKeywords: string
+  ogImage: string
+  favicon: string
+  // Book page
+  bookTitle: string
+  bookDescription: string
+  bookImage: string
+  // Site info for JsonLd
+  siteUrl: string
+  personDescription: string
+}
+
+const defaultSeoSettings: SeoSettings = {
+  metaTitle: 'Aanya Harshavat | Author, Scholar, Changemaker',
+  metaDescription: 'High school sophomore and published author passionate about making an impact through writing, leadership, and innovation.',
+  metaKeywords: 'Aanya Harshavat, student portfolio, published author, high school, leadership, young author, student leader',
+  ogImage: '/og-image.png',
+  favicon: '/favicon.ico',
+  bookTitle: 'Annie and Froggy Make a Friend | Aanya Harshavat',
+  bookDescription: 'Read "Annie and Froggy Make a Friend" - a children\'s book by Aanya Harshavat about friendship, kindness, and making new friends.',
+  bookImage: '/og-image.png',
+  siteUrl: 'https://aanyaharshavat.com',
+  personDescription: 'High school sophomore and published author passionate about making an impact through writing, leadership, and innovation.',
+}
+
+export async function getSeoSettings(): Promise<SeoSettings> {
+  if (!isSupabaseConfigured) return defaultSeoSettings
+
+  try {
+    const { data, error } = await supabase
+      .from('seo_settings')
+      .select('key, value')
+
+    if (error || !data?.length) return defaultSeoSettings
+
+    const contentMap = Object.fromEntries(
+      data.map((row: { key: string; value: string | null }) => [row.key, row.value || ''])
+    )
+
+    return {
+      metaTitle: contentMap.meta_title || defaultSeoSettings.metaTitle,
+      metaDescription: contentMap.meta_description || defaultSeoSettings.metaDescription,
+      metaKeywords: contentMap.meta_keywords || defaultSeoSettings.metaKeywords,
+      ogImage: contentMap.og_image || defaultSeoSettings.ogImage,
+      favicon: contentMap.favicon || defaultSeoSettings.favicon,
+      bookTitle: contentMap.book_title || defaultSeoSettings.bookTitle,
+      bookDescription: contentMap.book_description || defaultSeoSettings.bookDescription,
+      bookImage: contentMap.book_image || defaultSeoSettings.bookImage,
+      siteUrl: contentMap.site_url || defaultSeoSettings.siteUrl,
+      personDescription: contentMap.person_description || defaultSeoSettings.personDescription,
+    }
+  } catch {
+    return defaultSeoSettings
   }
 }

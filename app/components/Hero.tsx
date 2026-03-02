@@ -18,6 +18,7 @@ interface HeroContent {
   cta: string;
   badge: string;
   image: string;
+  imageAlt?: string;
 }
 
 interface HeroProps {
@@ -89,7 +90,7 @@ export default function Hero({
                 {heroContent.image ? (
                   <Image
                     src={heroContent.image}
-                    alt={siteContent.name}
+                    alt={heroContent.imageAlt || `${siteContent.name} - Author and Student Leader`}
                     fill
                     className="object-cover object-top"
                     priority

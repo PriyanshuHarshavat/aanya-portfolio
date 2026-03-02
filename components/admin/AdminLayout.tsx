@@ -19,6 +19,7 @@ import {
   X,
   ChevronRight,
   Home,
+  Search,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -31,6 +32,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Site Content', href: '/admin/content', icon: FileText },
+  { label: 'SEO', href: '/admin/seo', icon: Search },
   { label: 'Courses', href: '/admin/courses', icon: GraduationCap },
   { label: 'Research', href: '/admin/research', icon: Microscope },
   { label: 'Community', href: '/admin/community', icon: Heart },

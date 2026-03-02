@@ -29,11 +29,13 @@ const contentFields: ContentField[] = [
   { key: 'hero_badge', label: 'Badge Text', type: 'text', section: 'Hero', placeholder: 'Published Author' },
   { key: 'hero_cta', label: 'CTA Button', type: 'text', section: 'Hero', placeholder: 'Get in Touch' },
   { key: 'hero_image', label: 'Hero Image URL', type: 'url', section: 'Hero', placeholder: '/uploads/headshot.jpg' },
+  { key: 'hero_image_alt', label: 'Hero Image Alt Text (SEO)', type: 'text', section: 'Hero', placeholder: 'Aanya Harshavat - Published author and student leader' },
 
   // About Section
   { key: 'about_title', label: 'Section Title', type: 'text', section: 'About', placeholder: 'About Me' },
   { key: 'about_bio', label: 'Bio (paragraphs separated by blank lines)', type: 'textarea', section: 'About' },
   { key: 'about_image', label: 'About Image URL', type: 'url', section: 'About' },
+  { key: 'about_image_alt', label: 'About Image Alt Text (SEO)', type: 'text', section: 'About', placeholder: 'Aanya reading her book to elementary school students' },
   { key: 'about_quote', label: 'Quote', type: 'textarea', section: 'About' },
 
   // YouTube Section
