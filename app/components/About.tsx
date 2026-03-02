@@ -7,7 +7,6 @@ import {
   siteContent as defaultSiteContent,
   type SiteContent,
 } from '@/lib/content';
-import Image from 'next/image';
 
 interface AboutContentType {
   title: string;
