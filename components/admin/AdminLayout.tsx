@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Home,
   Search,
+  BookOpen,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -33,6 +34,7 @@ const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Site Content', href: '/admin/content', icon: FileText },
   { label: 'SEO', href: '/admin/seo', icon: Search },
+  { label: 'Published Work', href: '/admin/book', icon: BookOpen },
   { label: 'Courses', href: '/admin/courses', icon: GraduationCap },
   { label: 'Research', href: '/admin/research', icon: Microscope },
   { label: 'Community', href: '/admin/community', icon: Heart },

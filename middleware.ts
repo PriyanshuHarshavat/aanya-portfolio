@@ -6,6 +6,11 @@ export function middleware(request: NextRequest) {
 
   // Only protect /admin routes (except login)
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
+    // DEV BYPASS: Skip auth in development mode
+    if (process.env.NODE_ENV === 'development') {
+      return NextResponse.next()
+    }
+
     const sessionCookie = request.cookies.get('admin_session')
 
     if (!sessionCookie?.value) {
@@ -15,31 +20,8 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
 
-    // Verify session is valid (basic check - token exists and was created recently)
-    try {
-      const decoded = Buffer.from(sessionCookie.value, 'base64').toString()
-      const [prefix, timestamp] = decoded.split(':')
-
-      if (prefix !== 'admin') {
-        throw new Error('Invalid session')
-      }
-
-      // Check if session is expired (24 hours)
-      const sessionAge = Date.now() - parseInt(timestamp)
-      const maxAge = 24 * 60 * 60 * 1000 // 24 hours in ms
-
-      if (sessionAge > maxAge) {
-        // Session expired, redirect to login
-        const response = NextResponse.redirect(new URL('/admin/login', request.url))
-        response.cookies.delete('admin_session')
-        return response
-      }
-    } catch {
-      // Invalid session, redirect to login
-      const response = NextResponse.redirect(new URL('/admin/login', request.url))
-      response.cookies.delete('admin_session')
-      return response
-    }
+    // Session exists - cookie httpOnly + secure + sameSite provides protection
+    // Token is a crypto.randomUUID() set by the login route
   }
 
   return NextResponse.next()

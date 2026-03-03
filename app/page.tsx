@@ -14,6 +14,8 @@ import {
   getHeroContent,
   getAboutContent,
   getAchievements,
+  getBookContent,
+  getBookVideo,
   getGalleryImages,
   getTestimonials,
   getYoutubeVideos,
@@ -29,6 +31,8 @@ export default async function Home() {
     heroContent,
     aboutContent,
     achievements,
+    bookContent,
+    bookVideo,
     galleryImages,
     testimonials,
     youtubeVideos,
@@ -38,6 +42,8 @@ export default async function Home() {
     getHeroContent(),
     getAboutContent(),
     getAchievements(),
+    getBookContent(),
+    getBookVideo(),
     getGalleryImages(),
     getTestimonials(),
     getYoutubeVideos(),
@@ -51,7 +57,7 @@ export default async function Home() {
         <Hero siteContent={siteContent} heroContent={heroContent} />
         <About siteContent={siteContent} aboutContent={aboutContent} />
         <Achievements achievements={achievements} />
-        <Book galleryImages={galleryImages} />
+        <Book bookContent={bookContent} bookVideo={bookVideo} galleryImages={galleryImages} />
         <Videos videos={youtubeVideos} section={youtubeSection} />
         <Testimonials testimonials={testimonials} />
         <Contact />

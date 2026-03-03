@@ -5,18 +5,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  bookContent,
+  bookContent as defaultBookContent,
   bookGallery as defaultBookGallery,
-  bookVideo,
+  bookVideo as defaultBookVideo,
+  type Book as BookType,
   type BookGalleryImage,
 } from '@/lib/content';
+import type { BookVideo } from '@/lib/data';
 import Image from 'next/image';
 
 interface BookProps {
+  bookContent?: BookType;
+  bookVideo?: BookVideo;
   galleryImages?: BookGalleryImage[];
 }
 
-export default function Book({ galleryImages }: BookProps) {
+export default function Book({
+  bookContent = defaultBookContent,
+  bookVideo = defaultBookVideo,
+  galleryImages
+}: BookProps) {
   const bookGallery = galleryImages ?? defaultBookGallery;
   const [showVideo, setShowVideo] = useState(false);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);

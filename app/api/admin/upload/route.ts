@@ -1,6 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 
+/** Allowed image MIME types for upload */
+const ALLOWED_FILE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/svg+xml',
+  'image/x-icon',
+]
+
+/** Maximum file size: 5MB in bytes */
+const MAX_FILE_SIZE = 5 * 1024 * 1024
+
+/**
+ * POST /api/admin/upload
+ * Handles secure image uploads to Supabase Storage
+ *
+ * Validates:
+ * - File type (images only)
+ * - File size (max 5MB)
+ */
 export async function POST(request: NextRequest) {
   if (!isSupabaseConfigured) {
     return NextResponse.json({ error: 'Supabase not configured' }, { status: 503 })
@@ -15,8 +36,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: `Invalid file type. Allowed: ${ALLOWED_FILE_TYPES.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: `File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB` },
+        { status: 400 }
+      )
+    }
+
+    // Generate safe filename (remove any path traversal attempts)
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'bin'
+    const safeExt = fileExt.replace(/[^a-z0-9]/g, '')
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${safeExt}`
     const filePath = `${folder}/${fileName}`
 
     const buffer = Buffer.from(await file.arrayBuffer())
@@ -40,8 +79,7 @@ export async function POST(request: NextRequest) {
       path: filePath,
       url: urlData.publicUrl,
     })
-  } catch (error) {
-    console.error('Upload error:', error)
+  } catch {
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
   }
 }
