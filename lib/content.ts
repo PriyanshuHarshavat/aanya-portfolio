@@ -102,15 +102,6 @@ export interface Achievement {
   clubsAndLeadership?: ClubsAndLeadership;
 }
 
-export interface Project {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  tags: string[];
-  link?: string;
-}
-
 export interface Activity {
   id: string;
   name: string;
@@ -520,25 +511,6 @@ export const activities: Activity[] = [
   },
 ];
 
-export const projects: Project[] = [
-  {
-    id: "1",
-    title: "Annie and Froggy Make a Friend",
-    description: "A children's book promoting friendship and inclusion.",
-    image: "/uploads/PXL_20260212_222131269.MP~3.jpg",
-    tags: ["Writing", "Publishing", "Children's Literature"],
-    link: "",
-  },
-  {
-    id: "2",
-    title: "School Reading Program",
-    description: "Author visits to elementary schools reaching 500+ students.",
-    image: "/uploads/PXL_20260212_220805226.jpg",
-    tags: ["Community", "Education", "Leadership"],
-    link: "",
-  },
-];
-
 export const testimonials: Testimonial[] = [
   {
     id: "1",
@@ -552,14 +524,6 @@ export const testimonials: Testimonial[] = [
     author: "Library Staff",
     role: "Local Library",
   },
-];
-
-export const skills = [
-  { name: "Creative Writing", level: 95 },
-  { name: "Public Speaking", level: 90 },
-  { name: "Leadership", level: 88 },
-  { name: "Community Engagement", level: 92 },
-  { name: "Communication", level: 90 },
 ];
 
 export const youtubeVideos: YouTubeVideo[] = [
