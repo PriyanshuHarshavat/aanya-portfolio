@@ -1,0 +1,10 @@
+# robots.txt for aanyaharshavat.com
+
+User-agent: *
+Allow: /
+
+# Disallow admin pages
+Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://aanyaharshavat.com/sitemap.xml

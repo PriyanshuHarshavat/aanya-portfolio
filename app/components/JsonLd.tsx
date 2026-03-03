@@ -1,15 +1,13 @@
 import {
   getSeoSettings,
   getSiteContent,
-  getTestimonials,
   getYoutubeVideos,
 } from '@/lib/data'
 
 export default async function JsonLd() {
-  const [seo, site, testimonials, videos] = await Promise.all([
+  const [seo, site, videos] = await Promise.all([
     getSeoSettings(),
     getSiteContent(),
-    getTestimonials(),
     getYoutubeVideos(),
   ])
 
@@ -41,12 +39,12 @@ export default async function JsonLd() {
     },
   }
 
-  // Book Schema (CreativeWork) - from SEO settings
+  // Book Schema - just showcasing the accomplishment
   const bookImage = seo.bookImage || '/og-image.png'
   const bookSchema = {
     '@context': 'https://schema.org',
     '@type': 'Book',
-    name: seo.bookTitle.replace(' | Aanya Harshavat', ''), // Clean title for schema
+    name: seo.bookTitle.replace(' | Aanya Harshavat', ''),
     description: seo.bookDescription,
     author: {
       '@type': 'Person',
@@ -56,10 +54,6 @@ export default async function JsonLd() {
     image: bookImage.startsWith('http') ? bookImage : `${siteUrl}${bookImage}`,
     url: `${siteUrl}/book`,
     genre: "Children's Literature",
-    audience: {
-      '@type': 'Audience',
-      audienceType: 'Children',
-    },
     inLanguage: 'en',
   }
 
@@ -70,7 +64,7 @@ export default async function JsonLd() {
     name: video.title,
     description: video.description || 'Educational video from KalmKids',
     thumbnailUrl: `https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`,
-    uploadDate: '2025-01-01', // Approximate upload date
+    uploadDate: '2025-01-01',
     contentUrl: `https://www.youtube.com/watch?v=${video.videoId}`,
     embedUrl: `https://www.youtube.com/embed/${video.videoId}`,
     publisher: {
@@ -79,38 +73,6 @@ export default async function JsonLd() {
       url: siteUrl,
     },
   }))
-
-  // Review Schema (from testimonials)
-  // Using AggregateRating with individual reviews
-  const hasTestimonials = testimonials.length > 0
-  const reviewSchema = hasTestimonials
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'Person',
-        name: authorName,
-        url: siteUrl,
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '5',
-          bestRating: '5',
-          worstRating: '1',
-          ratingCount: testimonials.length.toString(),
-        },
-        review: testimonials.map((t) => ({
-          '@type': 'Review',
-          reviewRating: {
-            '@type': 'Rating',
-            ratingValue: '5',
-            bestRating: '5',
-          },
-          author: {
-            '@type': 'Person',
-            name: t.author,
-          },
-          reviewBody: t.quote,
-        })),
-      }
-    : null
 
   return (
     <>
@@ -133,12 +95,6 @@ export default async function JsonLd() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(videoSchema) }}
         />
       ))}
-      {reviewSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewSchema) }}
-        />
-      )}
     </>
   )
 }
