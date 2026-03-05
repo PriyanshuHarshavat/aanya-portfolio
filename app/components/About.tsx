@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Quote } from 'lucide-react';
+import Image from 'next/image';
 import {
   aboutContent as defaultAboutContent,
   siteContent as defaultSiteContent,
@@ -54,10 +55,12 @@ export default function About({
           <motion.div variants={itemVariants} className="relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl">
               {aboutContent.image ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
+                <Image
                   src={aboutContent.image}
                   alt={aboutContent.imageAlt || `${siteContent.name} - About`}
+                  width={600}
+                  height={800}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className="w-full h-auto"
                 />
               ) : (

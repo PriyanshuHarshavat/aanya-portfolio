@@ -92,6 +92,7 @@ export default function Hero({
                     src={heroContent.image}
                     alt={heroContent.imageAlt || `${siteContent.name} - Author and Student Leader`}
                     fill
+                    sizes="(max-width: 768px) 256px, (max-width: 1024px) 384px, 448px"
                     className="object-cover object-top"
                     priority
                   />

@@ -94,6 +94,7 @@ export default function Header() {
                 onClick={toggleDarkMode}
                 className="p-2 rounded-lg hover:bg-primary/5 text-muted-foreground"
                 whileTap={{ scale: 0.95 }}
+                aria-label="Toggle dark mode"
               >
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </motion.button>
@@ -102,6 +103,7 @@ export default function Header() {
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-lg hover:bg-primary/5 text-foreground"
                 whileTap={{ scale: 0.95 }}
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               >
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </motion.button>
