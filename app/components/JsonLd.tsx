@@ -58,21 +58,29 @@ export default async function JsonLd() {
   }
 
   // Video Schema (for YouTube videos)
-  const videoSchemas = videos.slice(0, 4).map((video) => ({
-    '@context': 'https://schema.org',
-    '@type': 'VideoObject',
-    name: video.title,
-    description: video.description || 'Educational video from KalmKids',
-    thumbnailUrl: `https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`,
-    uploadDate: '2025-01-01',
-    contentUrl: `https://www.youtube.com/watch?v=${video.videoId}`,
-    embedUrl: `https://www.youtube.com/embed/${video.videoId}`,
-    publisher: {
-      '@type': 'Person',
-      name: authorName,
-      url: siteUrl,
-    },
-  }))
+  const videoSchemas = videos.slice(0, 4).map((video) => {
+    // Format upload date with timezone (ISO 8601)
+    // If date exists, append time and timezone; otherwise use fallback
+    const uploadDate = video.uploadDate
+      ? `${video.uploadDate}T00:00:00Z`
+      : '2024-01-01T00:00:00Z'
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'VideoObject',
+      name: video.title,
+      description: video.description || 'Educational video from KalmKids',
+      thumbnailUrl: `https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`,
+      uploadDate,
+      contentUrl: `https://www.youtube.com/watch?v=${video.videoId}`,
+      embedUrl: `https://www.youtube.com/embed/${video.videoId}`,
+      publisher: {
+        '@type': 'Person',
+        name: authorName,
+        url: siteUrl,
+      },
+    }
+  })
 
   return (
     <>

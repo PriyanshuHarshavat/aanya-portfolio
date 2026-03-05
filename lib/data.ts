@@ -647,6 +647,7 @@ interface VideoRow {
   video_id: string
   title: string
   description: string | null
+  upload_date: string | null
 }
 
 /**
@@ -667,6 +668,7 @@ export async function getYoutubeVideos(): Promise<YouTubeVideo[]> {
       videoId: v.video_id,
       title: v.title,
       description: v.description || undefined,
+      uploadDate: v.upload_date || undefined,
     }))
   } catch {
     return staticYoutubeVideos

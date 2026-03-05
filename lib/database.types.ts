@@ -84,6 +84,7 @@ export interface YouTubeVideoRow {
   video_id: string
   title: string
   description: string | null
+  upload_date: string | null
   sort_order: number
 }
 

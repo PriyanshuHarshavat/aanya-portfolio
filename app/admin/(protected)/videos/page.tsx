@@ -12,6 +12,7 @@ interface Video {
   video_id: string
   title: string
   description: string
+  upload_date: string | null
   sort_order: number
 }
 
@@ -19,6 +20,7 @@ const defaultItem = {
   video_id: '',
   title: '',
   description: '',
+  upload_date: '',
   sort_order: 0,
 }
 
@@ -61,6 +63,7 @@ export default function VideosPage() {
       video_id: item.video_id,
       title: item.title,
       description: item.description || '',
+      upload_date: item.upload_date || '',
       sort_order: item.sort_order,
     })
     setModalOpen(true)
@@ -230,6 +233,16 @@ export default function VideosPage() {
             placeholder="Optional description"
             rows={2}
           />
+        </FormField>
+        <FormField label="Upload Date">
+          <Input
+            type="date"
+            value={formData.upload_date}
+            onChange={(e) => setFormData((p) => ({ ...p, upload_date: e.target.value }))}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Used for SEO structured data
+          </p>
         </FormField>
       </FormModal>
     </div>
