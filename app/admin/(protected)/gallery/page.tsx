@@ -33,6 +33,36 @@ export default function GalleryPage() {
   const [formData, setFormData] = useState(defaultItem)
   const [saving, setSaving] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadError('')
+    setUploading(true)
+    try {
+      const body = new FormData()
+      body.append('file', file)
+      body.append('folder', 'gallery')
+
+      const response = await fetch('/api/admin/upload', { method: 'POST', body })
+      const data = await response.json()
+
+      if (!response.ok) {
+        setUploadError(data.error || 'Upload failed')
+        return
+      }
+
+      setFormData((p) => ({ ...p, src: data.url }))
+    } catch {
+      setUploadError('Upload failed')
+    } finally {
+      setUploading(false)
+      e.target.value = ''
+    }
+  }
 
   useEffect(() => {
     fetchData()
@@ -210,13 +240,33 @@ export default function GalleryPage() {
               placeholder="/uploads/image.jpg"
               required
             />
-            <Button type="button" variant="outline" size="sm" disabled>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={uploading || !isSupabaseConfigured}
+              onClick={() => document.getElementById('gallery-upload-input')?.click()}
+            >
               <Upload className="w-4 h-4" />
             </Button>
+            <input
+              id="gallery-upload-input"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleUpload}
+            />
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Upload images via the Asset Manager or paste a URL
+            {uploading
+              ? 'Uploading…'
+              : isSupabaseConfigured
+                ? 'Upload an image from your device or paste a URL'
+                : 'Supabase not configured — paste a URL instead'}
           </p>
+          {uploadError && (
+            <p className="text-xs text-red-400 mt-1">{uploadError}</p>
+          )}
         </FormField>
         <FormField label="Alt Text">
           <Input
