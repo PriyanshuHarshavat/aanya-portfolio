@@ -1,5 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase, isSupabaseConfigured } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+/**
+ * Server-side Supabase client using the service-role key.
+ * This bypasses Storage RLS so uploads work without public write policies.
+ * NEVER import this into a client component — the key must stay server-only.
+ */
+const isSupabaseConfigured = !!(supabaseUrl && serviceRoleKey)
+const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl as string, serviceRoleKey as string)
+  : null
 
 /** Allowed image MIME types for upload */
 const ALLOWED_FILE_TYPES = [
@@ -60,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer())
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase!.storage
       .from('images')
       .upload(filePath, buffer, {
         contentType: file.type,
@@ -71,7 +84,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: uploadError.message }, { status: 500 })
     }
 
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = supabase!.storage
       .from('images')
       .getPublicUrl(filePath)
 
@@ -96,7 +109,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Path required' }, { status: 400 })
   }
 
-  const { error } = await supabase.storage
+  const { error } = await supabase!.storage
     .from('images')
     .remove([path])
 
