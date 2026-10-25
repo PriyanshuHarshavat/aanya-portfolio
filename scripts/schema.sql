@@ -122,16 +122,8 @@ CREATE POLICY "Allow anonymous read" ON gallery_images FOR SELECT USING (true);
 CREATE POLICY "Allow anonymous read" ON testimonials FOR SELECT USING (true);
 CREATE POLICY "Allow anonymous read" ON youtube_videos FOR SELECT USING (true);
 
--- Allow anonymous write for admin operations (using anon key with service role would be more secure)
-CREATE POLICY "Allow anonymous write" ON site_content FOR ALL USING (true);
-CREATE POLICY "Allow anonymous write" ON highlights FOR ALL USING (true);
-CREATE POLICY "Allow anonymous write" ON courses FOR ALL USING (true);
-CREATE POLICY "Allow anonymous write" ON research_experiences FOR ALL USING (true);
-CREATE POLICY "Allow anonymous write" ON community_service FOR ALL USING (true);
-CREATE POLICY "Allow anonymous write" ON activities FOR ALL USING (true);
-CREATE POLICY "Allow anonymous write" ON gallery_images FOR ALL USING (true);
-CREATE POLICY "Allow anonymous write" ON testimonials FOR ALL USING (true);
-CREATE POLICY "Allow anonymous write" ON youtube_videos FOR ALL USING (true);
+-- No write policies: the public (anon) key is read-only.
+-- Admin API routes write with the service-role key (lib/supabase-admin.ts), which bypasses RLS.
 
 -- Create storage bucket for images (run in Storage section or via API)
 -- INSERT INTO storage.buckets (id, name, public) VALUES ('images', 'images', true);

@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { Plus, Pencil, Trash2, Upload, X, AlertCircle, ImageIcon } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, AlertCircle, ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import FormModal, { FormField, Input, Select } from '@/components/admin/FormModal'
 import { isSupabaseConfigured } from '@/lib/supabase'
+import ImageDrop from '@/components/admin/ImageDrop'
 
 interface GalleryImage {
   id: number
@@ -33,36 +34,7 @@ export default function GalleryPage() {
   const [formData, setFormData] = useState(defaultItem)
   const [saving, setSaving] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState('')
-
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploadError('')
-    setUploading(true)
-    try {
-      const body = new FormData()
-      body.append('file', file)
-      body.append('folder', 'gallery')
-
-      const response = await fetch('/api/admin/upload', { method: 'POST', body })
-      const data = await response.json()
-
-      if (!response.ok) {
-        setUploadError(data.error || 'Upload failed')
-        return
-      }
-
-      setFormData((p) => ({ ...p, src: data.url }))
-    } catch {
-      setUploadError('Upload failed')
-    } finally {
-      setUploading(false)
-      e.target.value = ''
-    }
-  }
+  const [formError, setFormError] = useState('')
 
   useEffect(() => {
     fetchData()
@@ -86,6 +58,7 @@ export default function GalleryPage() {
   const handleAdd = () => {
     setEditItem(null)
     setFormData({ ...defaultItem, sort_order: items.length })
+    setFormError('')
     setModalOpen(true)
   }
 
@@ -98,6 +71,7 @@ export default function GalleryPage() {
       category: item.category,
       sort_order: item.sort_order,
     })
+    setFormError('')
     setModalOpen(true)
   }
 
@@ -111,6 +85,10 @@ export default function GalleryPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!formData.src) {
+      setFormError('Please add a photo first.')
+      return
+    }
     setSaving(true)
 
     try {
@@ -232,41 +210,16 @@ export default function GalleryPage() {
         onSubmit={handleSubmit}
         loading={saving}
       >
-        <FormField label="Image URL" required>
-          <div className="flex gap-2">
-            <Input
-              value={formData.src}
-              onChange={(e) => setFormData((p) => ({ ...p, src: e.target.value }))}
-              placeholder="/uploads/image.jpg"
-              required
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={uploading || !isSupabaseConfigured}
-              onClick={() => document.getElementById('gallery-upload-input')?.click()}
-            >
-              <Upload className="w-4 h-4" />
-            </Button>
-            <input
-              id="gallery-upload-input"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleUpload}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {uploading
-              ? 'Uploading…'
-              : isSupabaseConfigured
-                ? 'Upload an image from your device or paste a URL'
-                : 'Supabase not configured — paste a URL instead'}
-          </p>
-          {uploadError && (
-            <p className="text-xs text-red-400 mt-1">{uploadError}</p>
-          )}
+        <FormField label="Photo" required>
+          <ImageDrop
+            value={formData.src}
+            onChange={(url) => {
+              setFormData((p) => ({ ...p, src: url }))
+              setFormError('')
+            }}
+            folder="gallery"
+          />
+          {formError && <p className="text-sm text-red-500 mt-1">{formError}</p>}
         </FormField>
         <FormField label="Alt Text">
           <Input

@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
-import { Save, RefreshCw, AlertCircle, Upload, BookOpen, Video, ImageIcon } from 'lucide-react'
+import { Save, RefreshCw, AlertCircle, BookOpen, Video, ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { isSupabaseConfigured } from '@/lib/supabase'
+import ImageDrop from '@/components/admin/ImageDrop'
+import { bookContent as staticBookContent, bookVideo as staticBookVideo } from '@/lib/content'
 
 interface BookField {
   key: string
@@ -21,13 +22,13 @@ const bookFields: BookField[] = [
   { key: 'book_title', label: 'Book Title', type: 'text', section: 'Book Details', placeholder: 'Annie and Froggy Make a Friend' },
   { key: 'book_description', label: 'Short Description', type: 'textarea', section: 'Book Details', placeholder: 'A heartwarming children\'s book about friendship...', hint: 'Brief description shown on the main page' },
   { key: 'book_synopsis', label: 'Full Synopsis', type: 'textarea', section: 'Book Details', placeholder: 'Detailed story description...', hint: 'Longer description of the book' },
-  { key: 'book_cover_image', label: 'Book Cover Image', type: 'image', section: 'Book Details', placeholder: '/uploads/book-cover.png' },
+  { key: 'book_cover_image', label: 'Book Cover', type: 'image', section: 'Book Details' },
   { key: 'book_purchase_link', label: 'Purchase Link (optional)', type: 'url', section: 'Book Details', placeholder: 'https://amazon.com/...', hint: 'Leave empty to hide the purchase button' },
 
   // Video Section
   { key: 'book_video_title', label: 'Video Section Title', type: 'text', section: 'Video', placeholder: 'Watch Aanya Read to Students' },
   { key: 'book_video_src', label: 'Video File URL', type: 'url', section: 'Video', placeholder: '/uploads/book-presentation.mp4', hint: 'URL to the video file (MP4)' },
-  { key: 'book_video_poster', label: 'Video Thumbnail', type: 'image', section: 'Video', placeholder: '/uploads/video-poster.jpg', hint: 'Image shown before video plays' },
+  { key: 'book_video_poster', label: 'Video Thumbnail', type: 'image', section: 'Video', hint: 'Image shown before video plays' },
 ]
 
 export default function BookPage() {
@@ -36,8 +37,6 @@ export default function BookPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const [uploadingField, setUploadingField] = useState<string | null>(null)
-  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
   useEffect(() => {
     fetchContent()
@@ -61,32 +60,6 @@ export default function BookPage() {
       console.error('Failed to fetch content:', err)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleImageUpload = async (fieldKey: string, file: File) => {
-    setUploadingField(fieldKey)
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('folder', 'book')
-
-      const response = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setValues(prev => ({ ...prev, [fieldKey]: data.url }))
-      } else {
-        const errData = await response.json()
-        setError(errData.error || 'Upload failed')
-      }
-    } catch {
-      setError('Upload failed')
-    } finally {
-      setUploadingField(null)
     }
   }
 
@@ -204,50 +177,13 @@ export default function BookPage() {
                   </label>
 
                   {field.type === 'image' ? (
-                    <div className="space-y-3">
-                      <div className="flex gap-3">
-                        <input
-                          type="text"
-                          value={values[field.key] || ''}
-                          onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
-                          placeholder={field.placeholder}
-                          className="flex-1 px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        />
-                        <input
-                          type="file"
-                          accept="image/*"
-                          ref={el => { fileInputRefs.current[field.key] = el }}
-                          onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            if (file) handleImageUpload(field.key, file)
-                          }}
-                          className="hidden"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => fileInputRefs.current[field.key]?.click()}
-                          disabled={uploadingField === field.key}
-                        >
-                          {uploadingField === field.key ? (
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Upload className="w-4 h-4" />
-                          )}
-                        </Button>
-                      </div>
-
-                      {values[field.key] && (
-                        <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-border">
-                          <Image
-                            src={values[field.key]}
-                            alt="Preview"
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      )}
-                    </div>
+                    <ImageDrop
+                      value={values[field.key] || ''}
+                      onChange={(url) => setValues((prev) => ({ ...prev, [field.key]: url }))}
+                      folder="book"
+                      shape={field.key === 'book_cover_image' ? 'portrait' : 'wide'}
+                      fallback={field.key === 'book_cover_image' ? staticBookContent.coverImage : staticBookVideo.poster}
+                    />
                   ) : field.type === 'textarea' ? (
                     <textarea
                       value={values[field.key] || ''}

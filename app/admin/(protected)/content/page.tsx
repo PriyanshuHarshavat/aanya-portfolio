@@ -5,11 +5,12 @@ import { motion } from 'framer-motion'
 import { Save, RefreshCw, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { isSupabaseConfigured } from '@/lib/supabase'
+import ImageDrop from '@/components/admin/ImageDrop'
 
 interface ContentField {
   key: string
   label: string
-  type: 'text' | 'textarea' | 'url'
+  type: 'text' | 'textarea' | 'url' | 'image'
   section: string
   placeholder?: string
 }
@@ -28,13 +29,13 @@ const contentFields: ContentField[] = [
   { key: 'hero_subheadline', label: 'Subheadline', type: 'textarea', section: 'Hero' },
   { key: 'hero_badge', label: 'Badge Text', type: 'text', section: 'Hero', placeholder: 'Published Author' },
   { key: 'hero_cta', label: 'CTA Button', type: 'text', section: 'Hero', placeholder: 'Get in Touch' },
-  { key: 'hero_image', label: 'Hero Image URL', type: 'url', section: 'Hero', placeholder: '/uploads/headshot.jpg' },
+  { key: 'hero_image', label: 'Hero Photo', type: 'image', section: 'Hero' },
   { key: 'hero_image_alt', label: 'Hero Image Alt Text (SEO)', type: 'text', section: 'Hero', placeholder: 'Aanya Harshavat - Published author and student leader' },
 
   // About Section
   { key: 'about_title', label: 'Section Title', type: 'text', section: 'About', placeholder: 'About Me' },
   { key: 'about_bio', label: 'Bio (paragraphs separated by blank lines)', type: 'textarea', section: 'About' },
-  { key: 'about_image', label: 'About Image URL', type: 'url', section: 'About' },
+  { key: 'about_image', label: 'About Photo', type: 'image', section: 'About' },
   { key: 'about_image_alt', label: 'About Image Alt Text (SEO)', type: 'text', section: 'About', placeholder: 'Aanya reading her book to elementary school students' },
   { key: 'about_quote', label: 'Quote', type: 'textarea', section: 'About' },
 
@@ -201,7 +202,13 @@ export default function ContentPage() {
                       <label className="block text-sm font-medium mb-1.5">
                         {field.label}
                       </label>
-                      {field.type === 'textarea' ? (
+                      {field.type === 'image' ? (
+                        <ImageDrop
+                          value={values[field.key] || ''}
+                          onChange={(url) => setValues((prev) => ({ ...prev, [field.key]: url }))}
+                          folder="site"
+                        />
+                      ) : field.type === 'textarea' ? (
                         <textarea
                           value={values[field.key] || ''}
                           onChange={(e) =>

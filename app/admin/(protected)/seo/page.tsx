@@ -1,19 +1,18 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Save,
   RefreshCw,
   AlertCircle,
   Globe,
-  Image as ImageIcon,
   BookOpen,
-  Upload,
   X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { isSupabaseConfigured } from '@/lib/supabase'
+import ImageDrop from '@/components/admin/ImageDrop'
 
 const TITLE_LIMIT = 60
 const DESCRIPTION_LIMIT = 160
@@ -48,12 +47,8 @@ export default function SeoPage() {
   const [values, setValues] = useState<SeoValues>(defaultValues)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const faviconInputRef = useRef<HTMLInputElement>(null)
-  const ogImageInputRef = useRef<HTMLInputElement>(null)
-  const bookImageInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchSeoSettings()
@@ -113,34 +108,6 @@ export default function SeoPage() {
       setError('Failed to save SEO settings')
     } finally {
       setSaving(false)
-    }
-  }
-
-  const handleImageUpload = async (
-    file: File,
-    field: 'favicon' | 'og_image' | 'book_image'
-  ) => {
-    setUploading(field)
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('folder', 'seo')
-
-      const response = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setValues((prev) => ({ ...prev, [field]: data.url }))
-      } else {
-        setError('Failed to upload image')
-      }
-    } catch {
-      setError('Failed to upload image')
-    } finally {
-      setUploading(null)
     }
   }
 
@@ -268,60 +235,17 @@ export default function SeoPage() {
               <p className="text-sm text-muted-foreground">The small icon in browser tabs</p>
             </div>
             <div className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-lg border border-border bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-                  {values.favicon ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={values.favicon} alt="Favicon preview" className="w-full h-full object-contain" />
-                  ) : (
-                    <ImageIcon className="w-6 h-6 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1 space-y-3">
-                  <input
-                    type="url"
-                    value={values.favicon}
-                    onChange={(e) => setValues((prev) => ({ ...prev, favicon: e.target.value }))}
-                    placeholder="/favicon.ico or upload an image"
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                  <div className="flex gap-2">
-                    <input
-                      ref={faviconInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg,image/x-icon,image/svg+xml"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) handleImageUpload(file, 'favicon')
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => faviconInputRef.current?.click()}
-                      disabled={uploading === 'favicon'}
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      {uploading === 'favicon' ? 'Uploading...' : 'Upload Image'}
-                    </Button>
-                    {values.favicon && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setValues((prev) => ({ ...prev, favicon: '' }))}
-                      >
-                        <X className="w-4 h-4 mr-1" />
-                        Clear
-                      </Button>
-                    )}
-                  </div>
+              <div className="space-y-3">
+                <ImageDrop
+                  value={values.favicon}
+                  onChange={(url) => setValues((prev) => ({ ...prev, favicon: url }))}
+                  folder="seo"
+                  shape="icon"
+                  accept="image/png,image/jpeg,image/x-icon,image/svg+xml"
+                />
                   <p className="text-xs text-muted-foreground">
                     Recommended: 32x32 or 180x180 pixels. PNG, ICO, or SVG format.
                   </p>
-                </div>
               </div>
             </div>
           </motion.div>
@@ -390,43 +314,13 @@ export default function SeoPage() {
               {/* OG Image */}
               <div>
                 <label className="block text-sm font-medium mb-1.5">Social Share Image</label>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="url"
-                    value={values.og_image}
-                    onChange={(e) => setValues((prev) => ({ ...prev, og_image: e.target.value }))}
-                    placeholder="/og-image.png"
-                    className="flex-1 px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                  <input
-                    ref={ogImageInputRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handleImageUpload(file, 'og_image')
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => ogImageInputRef.current?.click()}
-                    disabled={uploading === 'og_image'}
-                  >
-                    <Upload className="w-4 h-4" />
-                  </Button>
-                </div>
-                {values.og_image && (
-                  <div className="relative aspect-[1200/630] max-w-sm rounded-lg overflow-hidden border border-border bg-muted">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={values.og_image}
-                      alt="Social share preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+                <ImageDrop
+                  value={values.og_image}
+                  onChange={(url) => setValues((prev) => ({ ...prev, og_image: url }))}
+                  folder="seo"
+                  shape="wide"
+                  accept="image/png,image/jpeg,image/webp"
+                />
                 <p className="text-xs text-muted-foreground mt-1">
                   Recommended: 1200x630 pixels for optimal display on social platforms
                 </p>
@@ -483,43 +377,13 @@ export default function SeoPage() {
               {/* Book Image */}
               <div>
                 <label className="block text-sm font-medium mb-1.5">Social Share Image</label>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="url"
-                    value={values.book_image}
-                    onChange={(e) => setValues((prev) => ({ ...prev, book_image: e.target.value }))}
-                    placeholder="/book-og-image.png"
-                    className="flex-1 px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                  <input
-                    ref={bookImageInputRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handleImageUpload(file, 'book_image')
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => bookImageInputRef.current?.click()}
-                    disabled={uploading === 'book_image'}
-                  >
-                    <Upload className="w-4 h-4" />
-                  </Button>
-                </div>
-                {values.book_image && (
-                  <div className="relative aspect-[1200/630] max-w-sm rounded-lg overflow-hidden border border-border bg-muted">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={values.book_image}
-                      alt="Book social share preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+                <ImageDrop
+                  value={values.book_image}
+                  onChange={(url) => setValues((prev) => ({ ...prev, book_image: url }))}
+                  folder="seo"
+                  shape="wide"
+                  accept="image/png,image/jpeg,image/webp"
+                />
               </div>
             </div>
           </motion.div>

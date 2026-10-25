@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import crypto from 'crypto'
-
-/** Session duration: 24 hours in seconds */
-const SESSION_DURATION_SECONDS = 60 * 60 * 24
+import { SESSION_COOKIE, SESSION_DURATION_SECONDS, createSessionToken } from '@/lib/session'
 
 /**
  * POST /api/admin/login
@@ -38,11 +35,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create cryptographically secure session token
-    const sessionToken = crypto.randomUUID()
+    // Signed, expiring token that middleware can verify
+    const sessionToken = await createSessionToken()
 
     const cookieStore = await cookies()
-    cookieStore.set('admin_session', sessionToken, {
+    cookieStore.set(SESSION_COOKIE, sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict', // Upgraded from 'lax' for better security

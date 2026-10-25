@@ -1,18 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-/**
- * Server-side Supabase client using the service-role key.
- * This bypasses Storage RLS so uploads work without public write policies.
- * NEVER import this into a client component — the key must stay server-only.
- */
-const isSupabaseConfigured = !!(supabaseUrl && serviceRoleKey)
-const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl as string, serviceRoleKey as string)
-  : null
+import { supabaseAdmin as supabase, isSupabaseAdminConfigured as isSupabaseConfigured } from '@/lib/supabase-admin'
 
 /** Allowed image MIME types for upload */
 const ALLOWED_FILE_TYPES = [
@@ -52,7 +39,7 @@ export async function POST(request: NextRequest) {
     // Validate file type
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: `Invalid file type. Allowed: ${ALLOWED_FILE_TYPES.join(', ')}` },
+        { error: 'That file isn\'t a photo we can use. Please pick a JPG, PNG, or WebP image.' },
         { status: 400 }
       )
     }
@@ -60,7 +47,7 @@ export async function POST(request: NextRequest) {
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: `File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB` },
+        { error: 'That photo is too big. Please pick a smaller one.' },
         { status: 400 }
       )
     }
@@ -73,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer())
 
-    const { error: uploadError } = await supabase!.storage
+    const { error: uploadError } = await supabase.storage
       .from('images')
       .upload(filePath, buffer, {
         contentType: file.type,
@@ -84,7 +71,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: uploadError.message }, { status: 500 })
     }
 
-    const { data: urlData } = supabase!.storage
+    const { data: urlData } = supabase.storage
       .from('images')
       .getPublicUrl(filePath)
 
@@ -109,7 +96,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Path required' }, { status: 400 })
   }
 
-  const { error } = await supabase!.storage
+  const { error } = await supabase.storage
     .from('images')
     .remove([path])
 
